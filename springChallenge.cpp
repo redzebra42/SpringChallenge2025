@@ -35,9 +35,10 @@ struct State {
 
 struct Move {
     int coord;
-    vector<vector<int>> selected_dice; //{{coord, value}, ...}
+    vector<vector<int>> selected_dice; //{{neighb1, neighb2, ...}, ...}
     Move(int c) {
         coord = c;
+        selected_dice = {};
     }
 };
 
@@ -81,8 +82,8 @@ vector<int> neighbouring_coords(int coord) {
 Move *counting_neighbours(const State &state, int coord) {
     vector<int> neighb = neighbouring_coords(coord);
     remove_zeros(neighb);
+    Move *move = new Move(coord);
     if (neighb.size() > 1) {
-        Move *move = new Move(coord);
         if (neighb.size() == 2) {
             move->selected_dice = {{neighb[0], neighb[1]}};
         }
@@ -109,11 +110,25 @@ Move *counting_neighbours(const State &state, int coord) {
                 {neighb[0], neighb[1], neighb[2], neighb[3]},
             };
         }
-        return move;
     }
-    else {
-        //TODO
+    return move;
+}
+
+int sum(vector<int> v) {
+    int s = 0;
+    for (int i : v) {
+        s += i;
     }
+    return s;
+}
+
+bool exist_nice_sum(const Move &move, const State &state) {
+    for (vector<int> dice : move.selected_dice) {
+        if (sum(dice) <= 6) {
+            return true;
+        }
+    }
+    return false;
 }
 
 void remove_zeros(std::vector<int> &neighb) {
@@ -124,9 +139,10 @@ void remove_zeros(std::vector<int> &neighb) {
         }
     }
 }
+
 bool is_legal(const State &state, int coord) {
     if (coord >= 0 && coord < 9) {
-        if (state.board[coord] == 0) {
+        if (state.board[coord] == 0 && exist_nice_sum(*counting_neighbours(state, coord), state)) {
             return true;
         }
         else {
@@ -138,3 +154,14 @@ bool is_legal(const State &state, int coord) {
         return false;
     }
 }
+
+vector<int> legal_moves(const State &state) {
+    vector<int> res = {};
+    for (int i=0; i<9; i++) {
+        if (is_legal(state, i)) {
+            res.push_back(i);
+        }
+    }
+    return res;
+}
+
