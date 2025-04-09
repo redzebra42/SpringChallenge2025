@@ -2,31 +2,10 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <math.h>
 #include "springChallenge.h"
 
 using namespace std;
-
-/**
- * Auto-generated code below aims at helping you parse
- * the standard input according to the problem statement.
- **/
-
-int main()
-{
-    int depth;
-    cin >> depth; cin.ignore();
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
-            int value;
-            cin >> value; cin.ignore();
-        }
-    }
-
-    // Write an action using cout. DON'T FORGET THE "<< endl"
-    // To debug: cerr << "Debug messages..." << endl;
-
-    cout << "0" << endl;
-}
 
 struct State {
     vector<int> board;
@@ -88,6 +67,15 @@ vector<int> neighbouring_coords(int coord) {
     }
 }
 
+void remove_zeros(std::vector<int> &neighb) {
+    // remove the 0s from neighb
+    for (int i = 0; i < neighb.size(); i++) {
+        if (neighb[i] == 0) {
+            neighb.erase(neighb.begin() + i);
+        }
+    }
+}
+
 Move *counting_neighbours(const State &state, int coord) {
     vector<int> neighb = neighbouring_coords(coord);
     remove_zeros(neighb);
@@ -140,15 +128,6 @@ bool exist_nice_sum(const Move &move, const State &state) {
     return false;
 }
 
-void remove_zeros(std::vector<int> &neighb) {
-    // remove the 0s from neighb
-    for (int i = 0; i < neighb.size(); i++) {
-        if (neighb[i] == 0) {
-            neighb.erase(neighb.begin() + i);
-        }
-    }
-}
-
 bool is_legal(const State &state, int coord) {
     if (coord >= 0 && coord < 9) {
         if (state.board[coord] == 0 && exist_nice_sum(*counting_neighbours(state, coord), state)) {
@@ -192,11 +171,15 @@ int combinaison_value(vector<int> comb, const State &state) {
 }
 
 int to_int(const State state) {
-    //TODO
+    int s = 0;
+    for (int i=0; i < size(state.board); i++) {
+        s += state.board[i]*pow(10, 8-i);
+    }
+    return s;
 }
 
 int state_sum(int s1, int s2) {
-    //TODO
+    return (s1 + s2) % (int)pow(2, 30);
 }
 
 int all_possible_boards(const State &state, int max_depth) {
@@ -214,4 +197,24 @@ int all_possible_boards(const State &state, int max_depth) {
         }
         return s;
     }
+}
+
+int main()
+{
+    vector<int> board;
+    int depth;
+    cin >> depth; cin.ignore();
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            int value;
+            cin >> value; cin.ignore();
+            board.push_back(value);
+        }
+    }
+    State state = State(board, 0);
+
+    // Write an action using cout. DON'T FORGET THE "<< endl"
+    // To debug: cerr << "Debug messages..." << endl;
+
+    cout << all_possible_boards(state, depth) << endl;
 }
