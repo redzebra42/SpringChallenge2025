@@ -31,6 +31,15 @@ int main()
 struct State {
     vector<int> board;
     int turn;
+    State(vector<int> b, int t) {
+        board = b;
+        turn = t;
+    }
+};
+
+struct Node {
+    State *state;
+    vector<Node*> children;
 };
 
 struct Move {
@@ -155,13 +164,54 @@ bool is_legal(const State &state, int coord) {
     }
 }
 
-vector<int> legal_moves(const State &state) {
-    vector<int> res = {};
+vector<Move*> legal_moves(const State &state) {
+    vector<Move*> res = {};
     for (int i=0; i<9; i++) {
         if (is_legal(state, i)) {
-            res.push_back(i);
+            res.push_back(counting_neighbours(state, i));
         }
     }
     return res;
 }
 
+void play_at(State &state, int coord, int value) {
+    // we dont check if the move is legal to gain time
+    state.board[coord] = value;
+}
+
+bool is_over(const State &state) {
+    return size(legal_moves(state)) == 0;
+}
+
+int combinaison_value(vector<int> comb, const State &state) {
+    int s = 0;
+    for (int i : comb) {
+        s += state.board[i];
+    }
+    return s;
+}
+
+int to_int(const State state) {
+    //TODO
+}
+
+int state_sum(int s1, int s2) {
+    //TODO
+}
+
+int all_possible_boards(const State &state, int max_depth) {
+    if (is_over(state) || max_depth == 0) {
+        return to_int(state);
+    }
+    else {
+        int s = 0;
+        for (Move *move : legal_moves(state)) {
+            for (vector<int> combinaison : move->selected_dice) {
+                State *new_state = new State(state.board, state.turn + 1);
+                play_at(*new_state, move->coord, combinaison_value(combinaison, state));
+                s = state_sum(s, all_possible_boards(*new_state, max_depth-1));
+            }
+        }
+        return s;
+    }
+}
